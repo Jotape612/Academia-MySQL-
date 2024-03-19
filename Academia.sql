@@ -1,4 +1,5 @@
 create database Academia_morebuilder; 
+use academia_morebuilder; 
 
 create table cliente (
 cli_id INT AUTO_INCREMENT PRIMARY KEY,
@@ -61,6 +62,9 @@ values ('Cheque');
 insert into forma_pagamento (fpag_nome)
 values ('Outros');
 
+
+
+
 -- fazer trigger de atualizar estoque: saida e entrada.
 create table Estoque (
 estoque_id int auto_increment primary key,
@@ -69,8 +73,11 @@ estoque_lote int,
 estoque_data_fab date,
 estoque_data_val date,
 estoque_obs varchar (100),
-estoque_quantidade float
+estoque_quantidade float,
+estoque_fk_opcao int,
 );
+
+
 
 insert into Estoque (estoque_nome, estoque_lote,estoque_data_fab,estoque_data_val,estoque_obs,estoque_quantidade)
 values ('Suplemento','01', '2024-01-01', '2025-01-01', 'N/A', '3');
@@ -102,11 +109,13 @@ values ('Cardio', '2', '1', '0');
 create table produtos (
 prod_id int auto_increment primary key,
 prod_nome varchar (100),
-prod_preco float,
+prod_preco float, 
 prod_fk_estoque int,
 foreign key (prod_fk_estoque) references estoque (estoque_id)
 );
 
+alter table produtos add column pron_status varchar (100);
+ 
 insert into produtos (prod_nome,prod_preco,prod_fk_estoque)
 values ('creatina', '79.99', 1);
 insert into produtos (prod_nome,prod_preco,prod_fk_estoque)
@@ -121,6 +130,14 @@ insert into produtos (prod_nome,prod_preco,prod_fk_estoque)
 values ('Barra proteica 20g', '10', 3);
 insert into produtos (prod_nome,prod_preco,prod_fk_estoque)
 values ('Whey zero 500g', '149.99', 3);
+
+update produtos 
+set pron_status = 'disponivel'
+where prod_id  in (1,6,4);
+
+update produtos 
+set pron_status = 'indisponivel'
+where prod_id  in (2,3,5) ;
 
 create table instrutor (
 inst_id int auto_increment primary key,
@@ -185,8 +202,8 @@ SELECT iven_id, iven_quantidade, prod_nome AS nome_produto, prod_preco AS preço
        estoque_nome AS tipo_produto, estoque_data_fab AS data_fabricacao,
        estoque_data_val AS validade, estoque_obs AS observacao
 FROM itens_venda
-JOIN produtos ON itens_venda.iven_fk_produto = produtos.prod_id
-JOIN Estoque ON produtos.prod_fk_estoque = Estoque.estoque_id;
+JOIN produtos ON iiven_fk_produto = prod_id
+JOIN Estoque ON prod_fk_estoque = estoque_id;
 
 
 
@@ -290,13 +307,45 @@ END$
 
 DELIMITER ;
 
+
+
 DELIMITER //
-CREATE PROCEDURE get_vendas_cli (in cli_id int) 
+CREATE PROCEDURE alunos_mensais (in mensalidade int) 
 
 BEGIN
-   select*from venda where vend_fk_cliente = cli_id; 
+  	if mensalidade = 1 then
+   select*from ficha_de_treino where ftrein_fk_plano = 1;
+   
+   else if mensalidade = 2 then
+   select*from ficha_de_treino where ftrein_fk_plano = 2;
+   
+   else
+   select*from ficha_de_treino where ftrein_fk_plano = 3;
+   end if;
+end if;
 END//
 
 DELIMITER ;
 
-call get_vendas_cli (1);
+call alunos_mensais (1);
+call alunos_mensais (2);
+call alunos_mensais (3);
+
+
+DELIMITER //
+CREATE PROCEDURE status_produtos (in opcao int) 
+
+BEGIN
+	if opcao = 0 then
+   select*from produtos where pron_status = 'disponivel';
+   
+   else
+   select*from produtos where pron_status = 'indisponivel';
+   end if;
+END//
+
+DELIMITER ;
+
+call status_produtos (0);
+call status_produtos (1);
+
