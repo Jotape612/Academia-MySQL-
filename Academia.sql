@@ -177,6 +177,9 @@ foreign key (vend_fk_fpag) references forma_pagamento (fpag_id),
 foreign key (vend_fk_funcionario) references funcionario (func_id)
 );
 
+insert into venda (vend_total, vend_data, vend_fk_cliente,vend_fk_fpag,vend_fk_funcionario)
+values ('119.98', '2024-03-18', 1, 3, 2);
+
 CREATE VIEW vw_detalhes_da_venda AS
 SELECT iven_id, iven_quantidade, prod_nome AS nome_produto, prod_preco AS preço,
        estoque_nome AS tipo_produto, estoque_data_fab AS data_fabricacao,
@@ -286,3 +289,14 @@ BEGIN
 END$
 
 DELIMITER ;
+
+DELIMITER //
+CREATE PROCEDURE get_vendas_cli (in cli_id int) 
+
+BEGIN
+   select*from venda where vend_fk_cliente = cli_id; 
+END//
+
+DELIMITER ;
+
+call get_vendas_cli (1);
